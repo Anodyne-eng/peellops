@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Reports{% endblock %}
+{% block page_heading %}Reports{% endblock %}
+
+{% block content %}
+
+    <!-- Summary Cards -->
+    <h5 class="text-muted mb-2">Operations Summary</h5>
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Peels Used</h5>
+                    <h2 class="text-warning">{{ total_peels_used }} kg</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Units Produced</h5>
+                    <h2 class="text-success">{{ total_units_produced }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Batches</h5>
+                    <h2>{{ batches | length }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Active Staff</h5>
+                    <h2 class="text-info">{{ staff_list | length }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row g-3 mb-4">
+
+        <!-- Production by Product Type -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Units Produced by Product Type</h5>
+                    {% for product_type, qty in batches_by_type.items() %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-capitalize">{{ product_type }}</span>
+                            <span>{{ qty }} units</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar"
+                                 style="width: {{ (qty / total_units_produced * 100) | round }}%; background-color: #E87722;"
+                                 role="progressbar">
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Materials -->
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Materials Status</h5>
+                    <table class="table table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Material</th>
+                                <th>Quantity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for m in materials %}
+                            <tr>
+                                <td>{{ m.name }}</td>
+                                <td>{{ m.quantity }} {{ m.unit }}</td>
+                                <td>
+                                    {% if m.status == "available" %}
+                                        <span class="badge bg-success">Available</span>
+                                    {% elif m.status == "low_stock" %}
+                                        <span class="badge bg-warning text-dark">Low Stock</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Export Buttons -->
+    <h5 class="text-muted mb-2">Export Data</h5>
+    <div class="card shadow">
+        <div class="card-body">
+            <p class="text-muted">Download your data as CSV files to open in Excel or Google Sheets.</p>
+            <div class="d-flex gap-3">
+                <a href="/export/materials" class="btn btn-success">
+                    ⬇ Export Raw Materials
+                </a>
+                <a href="/export/batches" class="btn btn-primary">
+                    ⬇ Export Production Batches
+                </a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

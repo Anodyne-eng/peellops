@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Staff{% endblock %}
+{% block page_heading %}Edit Staff{% endblock %}
+
+{% block content %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body">
+
+                    <form method="POST" enctype="multipart/form-data">
+
+                        <div class="mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ staff.first_name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ staff.last_name }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Role</label>
+                            <select name="role" class="form-select" required>
+                                <option value="">Select a role</option>
+                                <option value="Production Supervisor" {% if staff.role == "Production Supervisor" %}selected{% endif %}>Production Supervisor</option>
+                                <option value="Production Worker" {% if staff.role == "Production Worker" %}selected{% endif %}>Production Worker</option>
+                                <option value="QC Officer" {% if staff.role == "QC Officer" %}selected{% endif %}>QC Officer</option>
+                                <option value="Material Handler" {% if staff.role == "Material Handler" %}selected{% endif %}>Material Handler</option>
+                                <option value="Manager" {% if staff.role == "Manager" %}selected{% endif %}>Manager</option>
+                                <option value="Other" {% if staff.role == "Other" %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Phone <span class="text-muted">(Optional)</span></label>
+                            <input type="text" name="phone" class="form-control" value="{{ staff.phone or '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Email <span class="text-muted">(Optional)</span></label>
+                            <input type="email" name="email" class="form-control" value="{{ staff.email or '' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Date Joined</label>
+                            <input type="date" name="date_joined" class="form-control" value="{{ staff.date_joined.strftime('%Y-%m-%d') }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Profile Picture</label>
+                            <div class="mb-2">
+                                <img src="{{ url_for('static', filename='uploads/' + staff.profile_pic) }}"
+                                     alt="{{ staff.full_name }}"
+                                     class="rounded-circle"
+                                     style="width: 60px; height: 60px; object-fit: cover;">
+                                <span class="text-muted small ms-2">Current picture</span>
+                            </div>
+                            <input type="file" name="profile_pic" class="form-control" accept="image/*">
+                            <div class="form-text">Leave empty to keep current picture. Max 2MB.</div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Update Staff</button>
+                            <a href="/staff" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

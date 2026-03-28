@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Staff{% endblock %}
+{% block page_heading %}Staff{% endblock %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="text-muted mb-0">All active staff members</h5>
+        <a href="/add-staff" class="btn btn-success">+ Add Staff</a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="row g-2 mb-3">
+        <div class="col-md-5">
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name or email...">
+        </div>
+        <div class="col-md-3">
+            <select id="roleFilter" class="form-select">
+                <option value="">All Roles</option>
+                <option value="Production Supervisor">Production Supervisor</option>
+                <option value="Production Worker">Production Worker</option>
+                <option value="QC Officer">QC Officer</option>
+                <option value="Material Handler">Material Handler</option>
+                <option value="Manager">Manager</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Staff Cards -->
+    <div class="row g-3" id="staffGrid">
+        {% for member in staff_list %}
+        <div class="col-md-3 staff-card"
+             data-name="{{ member.full_name | lower }}"
+             data-email="{{ member.email | lower if member.email else '' }}"
+             data-role="{{ member.role }}">
+            <div class="card shadow text-center h-100">
+                <div class="card-body">
+                    <img src="{{ url_for('static', filename='uploads/' + member.profile_pic) }}"
+                         alt="{{ member.full_name }}"
+                         class="rounded-circle mb-3"
+                         style="width: 80px; height: 80px; object-fit: cover;">
+                    <h5 class="card-title mb-1">{{ member.full_name }}</h5>
+                    <p class="text-muted small mb-1">{{ member.role }}</p>
+                    <p class="text-muted small mb-1">{{ member.phone or "No phone" }}</p>
+                    <p class="text-muted small mb-3">{{ member.email or "No email" }}</p>
+                    <p class="text-muted small">Joined: {{ member.date_joined.strftime('%d %b %Y') }}</p>
+                    <div class="d-flex justify-content-center gap-2 mt-2">
+                        <a href="/edit-staff/{{ member.id }}" class="btn btn-sm btn-outline-primary">Edit</a>
+                        <a href="#"
+                           onclick="confirmDelete('/deactivate-staff/{{ member.id }}', '{{ member.full_name }}')"
+                           class="btn btn-sm btn-outline-danger">Remove</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const roleFilter = document.getElementById('roleFilter');
+        const cards = document.querySelectorAll('.staff-card');
+
+        function filterStaff() {
+            const search = searchInput.value.toLowerCase();
+            const role = roleFilter.value;
+
+            cards.forEach(card => {
+                const name = card.dataset.name || '';
+                const email = card.dataset.email || '';
+                const cardRole = card.dataset.role || '';
+
+                const matchesSearch = name.includes(search) || email.includes(search);
+                const matchesRole = role === '' || cardRole === role;
+
+                card.style.display = matchesSearch && matchesRole ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterStaff);
+        roleFilter.addEventListener('change', filterStaff);
+    </script>
+
+{% endblock %}

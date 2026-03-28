@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
+
+{% block content %}
+
+    <!-- Low Stock Alert -->
+    {% if low_stock_materials %}
+    <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+        <div>
+            ⚠️ <strong>Low Stock Alert:</strong>
+            {% for m in low_stock_materials %}
+                <span class="badge bg-warning text-dark me-1">{{ m.name }} — {{ m.quantity }} {{ m.unit }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Raw Materials Row -->
+    <h5 class="text-muted mb-2">Raw Materials</h5>
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-6">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Raw Materials</h5>
+                    <h2>{{ total_materials }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Quantity in Stock</h5>
+                    <h2>{{ total_quantity }} kg</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Production Row -->
+    <h5 class="text-muted mb-2">Production</h5>
+    <div class="row g-3 mb-4">
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total Batches</h5>
+                    <h2>{{ total_batches }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow border-warning">
+                <div class="card-body">
+                    <h5 class="card-title">In Progress</h5>
+                    <h2 class="text-warning">{{ batches_in_progress }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow border-success">
+                <div class="card-body">
+                    <h5 class="card-title">Completed</h5>
+                    <h2 class="text-success">{{ batches_completed }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-center shadow border-info">
+                <div class="card-body">
+                    <h5 class="card-title">Peels Transformed</h5>
+                    <h2 class="text-info">{{ total_peels_transformed }} kg</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Chart and Recent Batches -->
+    <div class="row g-3 mb-4">
+
+        <!-- Production Chart -->
+        <div class="col-md-7">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Production Analytics</h5>
+                    <canvas id="productionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Batches -->
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-body p-0">
+                    <h5 class="card-title p-3 mb-0">Recent Batches</h5>
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Batch</th>
+                                <th>Product</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for batch in recent_batches %}
+                            <tr>
+                                <td>{{ batch.batch_number }}</td>
+                                <td>{{ batch.product_name }}</td>
+                                <td>
+                                    {% if batch.status == "completed" %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif batch.status == "in_progress" %}
+                                        <span class="badge bg-warning text-dark">In Progress</span>
+                                    {% elif batch.status == "planned" %}
+                                        <span class="badge bg-info text-dark">Planned</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-2">
+        <a href="/materials" class="btn btn-primary">View Inventory</a>
+        <a href="/add-material" class="btn btn-success">Add Material</a>
+        <a href="/batches" class="btn btn-secondary">View Batches</a>
+        <a href="/add-batch" class="btn btn-warning">Add Batch</a>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('productionChart').getContext('2d');
+
+        const labels = [{% for b in recent_batches %}"{{ b.batch_number }}"{% if not loop.last %},{% endif %}{% endfor %}];
+        const peelsData = [{% for b in recent_batches %}{{ b.peels_used }}{% if not loop.last %},{% endif %}{% endfor %}];
+        const qtyData = [{% for b in recent_batches %}{{ b.quantity_produced }}{% if not loop.last %},{% endif %}{% endfor %}];
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Peels Used (kg)',
+                        data: peelsData,
+                        backgroundColor: '#E87722',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Units Produced',
+                        data: qtyData,
+                        backgroundColor: '#2a9d8f',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+    </script>
+
+{% endblock %}
